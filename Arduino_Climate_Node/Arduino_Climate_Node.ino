@@ -26,42 +26,42 @@
 
 
 #include <math.h>
-#define Vishay_10K_Therm 4977.0f,298.15f,10000.0f //define thermistor B,To,R
 
-// High Humidity (95%) Val = 18;
-// Low Humidity (5%) Val = ??;
-// Check Humidity (68%) Value = 62
+float vishayA = 0.003354f;
+float vishayB = 0.000256985f;
+float vishayC = 0.000002620131f;
+float vishayD = 0.00000006383091f;                                 
+float ThermistorRo = 10000.0f;                 
+int TempSensorPin = 0;
+float TempBalanceR = 10050.0f;
 
 int HumSensorPin = 4;
-int TempSensorPin = 0;
-float TempBalanceR = 10000;
-
-long HumResult = 0;
 float HumTime1=0;
 float HumTime2=0;
+long HumReadingsPer=4;
+long HumReadDelay=100.0;
 
-long HumReadingsPer=1;
-long HumReadDelay=1000.0;
 
 void setup()                    // run once, when the sketch starts
 {
-
-  Serial.begin(9600);
-  Serial.println("start");      // a personal quirk 
+  Serial.begin(9600); 
 }
+
 void loop()                     // run over and over again
 {
-  long H=evalHumid(HumReadingsPer, HumSensorPin);
-  long TempValue = Temperature(TempSensorPin,Vishay_10K_Therm,TempBalanceR);
+  int HumidityValue=(100 - (0.61364f * ((evalHumid(HumReadingsPer, HumSensorPin)) - 10)));
+  int TempValue = CalculateTemp(analogRead(TempSensorPin));
   Serial.println("_____");
-  Serial.println("Temperature");
+  Serial.println("Temperature (degF)");
   Serial.println(TempValue);
-  Serial.println("Humidity");
-  Serial.println(H);
+  Serial.println("Humidity (%relative)");
+  Serial.println(HumidityValue);
   Serial.println("_____");
   delay(100);
-
 }
+
+
+
 
 long evalHumid(long samples, int sPin){
   long avgtime=0; 
@@ -72,14 +72,14 @@ long evalHumid(long samples, int sPin){
   }
   avgtime=avgtime/samples; 
   return(avgtime);
-
+  
 }
 
 long RCtime(int sensPin){
   long result = 0;
   pinMode(sensPin, OUTPUT);       // make pin OUTPUT
   digitalWrite(sensPin, HIGH);    // make pin HIGH to charge capacitor - study the schematic
-  delay(5000);                       // wait 1s to make sure cap is discharged
+  delay(2500);                       // wait 1s to make sure cap is discharged
 
   pinMode(sensPin, INPUT);  // turn pin into an input and time till pin goes low
   digitalWrite(sensPin, LOW);// turn pullups off - or it won't work
@@ -102,11 +102,19 @@ long decayTime(int input){
   }
 }
 
-float Temperature(int AnalogInputNumber,float B,float T0,float R0,float R_Balance)
-{
-  float R,T;
-  R=R_Balance*(1024.0f/float(analogRead(AnalogInputNumber))-1);
-  T=1.0f/(1.0f/T0+(1.0f/B)*log(R/R0));
-  T=9.0f*(T-273.15f)/5.0f+32.0f;
-  return T;
+
+
+float CalculateTemp(int RawADC) {
+  long Resistance;  
+  float Temp;  // Dual-Purpose variable to save space.
+
+  Resistance= TempBalanceR * ((1024.0f / RawADC) - 1.0f); 
+  Temp = log(Resistance / ThermistorRo);
+  Temp = 1.0f / (vishayA + (vishayB * Temp) + (vishayC * (Temp * Temp)) + (vishayD * (Temp * Temp * Temp)));
+  Temp = Temp - 273.15f;                            // Convert Kelvin to Celsius                      
+  Temp = (Temp * 9.0f)/ 5.0f + 32.0f;               // Convert to Fahrenheit
+  return Temp;                                      // Return the Temperature
 }
+
+
+
