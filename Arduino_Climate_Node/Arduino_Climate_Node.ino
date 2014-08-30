@@ -21,24 +21,27 @@
 
 // GND ----------- Sensor ------ 220ohm ----- Dig 4
 //              |           |
-//              ----10Moh----
+//              ----1Moh----
 
 
 
 #include <math.h>
 #define Vishay_10K_Therm 4977.0f,298.15f,10000.0f //define thermistor B,To,R
 
+// High Humidity (95%) Val = 18;
+// Low Humidity (5%) Val = ??;
+// Check Humidity (68%) Value = 62
 
 int HumSensorPin = 4;
 int TempSensorPin = 0;
 float TempBalanceR = 10000;
 
 long HumResult = 0;
-unsigned long HumTime1=0;
-unsigned long HumTime2=0;
+float HumTime1=0;
+float HumTime2=0;
 
-long HumReadingsPer=30.0;
-long HumReadDelay=50.0;
+long HumReadingsPer=1;
+long HumReadDelay=1000.0;
 
 void setup()                    // run once, when the sketch starts
 {
@@ -63,8 +66,9 @@ void loop()                     // run over and over again
 long evalHumid(long samples, int sPin){
   long avgtime=0; 
   for (int i=0;i<samples;i++){
-    RCtime(sPin);
-    avgtime+= decayTime(3);
+    //RCtime(sPin);
+    //avgtime+= decayTime(3);
+    avgtime+= RCtime(sPin);
   }
   avgtime=avgtime/samples; 
   return(avgtime);
@@ -74,18 +78,16 @@ long evalHumid(long samples, int sPin){
 long RCtime(int sensPin){
   long result = 0;
   pinMode(sensPin, OUTPUT);       // make pin OUTPUT
-  digitalWrite(sensPin, HIGH);    // make pin HIGH to discharge capacitor - study the schematic
-  delay(1);                       // wait a  ms to make sure cap is discharged
+  digitalWrite(sensPin, HIGH);    // make pin HIGH to charge capacitor - study the schematic
+  delay(5000);                       // wait 1s to make sure cap is discharged
 
   pinMode(sensPin, INPUT);  // turn pin into an input and time till pin goes low
   digitalWrite(sensPin, LOW);// turn pullups off - or it won't work
-  decayTime(1);  
-  while(digitalRead(sensPin)){    // wait for pin to go low
-    //result++;
-  }
-  decayTime(2);
-  delay(HumReadDelay); 
-  //return result;                   // report results   
+  //decayTime(1);
+  while(digitalRead(sensPin)){result++;}    // wait for pin to go low 
+  return result;
+  //decayTime(2);
+  //return decayTime(3);  
 }
 
 long decayTime(int input){
