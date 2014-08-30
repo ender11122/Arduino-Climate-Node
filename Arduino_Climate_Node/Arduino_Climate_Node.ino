@@ -6,8 +6,24 @@
 //temp code credit to Milan Malesevic and Zoran Stupid from arduino playground
 
 // HCH-1000 Humidity Sensor
-// 10Mohm R1
-// 220ohm R2
+// Vishay NTCLE100E3103HT1 Thermistor
+// Arduino Uno
+
+
+// Temp Sensor Circuit Diagram
+
+// 5v ------- Thermistor ------- 10Kohm ------- GND
+//                          |
+//                       Analog 0
+
+
+// Humidity Sensor Circuit Diagram
+
+// GND ----------- Sensor ------ 220ohm ----- Dig 4
+//              |           |
+//              ----10Moh----
+
+
 
 #include <math.h>
 #define Vishay_10K_Therm 4977.0f,298.15f,10000.0f //define thermistor B,To,R
