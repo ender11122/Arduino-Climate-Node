@@ -2,9 +2,13 @@
 // 30Aug2014
 // Adam Green (ndsoccer11122@yahoo.com)
 
-//humidity code credit to dpotthast from arduino forums 
-//temp code credit to Milan Malesevic and Zoran Stupid from arduino playground
+//Acknowledgments:
+//Humidity Credit to: dpotthast from arduino forums 
+//Temperature Credit to: Milan Malesevic and Zoran Stupid from arduino playground
+//Wireless Credit to: Glyn Hudson openenergymonitor.org GNU GPL V3 7/7/11
+//Wireless Library Credit to : JCW from Jeelabs.org
 
+//Components:
 // HCH-1000 Humidity Sensor
 // Vishay NTCLE100E3103HT1 Thermistor
 // Arduino Uno
@@ -23,10 +27,25 @@
 //              |           |
 //              ----1Moh----
 
+//wireless includes and definitions
+#include <JeeLib.h>
+#include <Ports.h>
+#include <PortsBMP085.h>
+#include <PortsLCD.h>
+#include <PortsSHT11.h>
+#include <RF12.h>
+#include <RF12sio.h>
+#define myNodeID 10          //node ID of tx (range 0-30)
+#define network     210      //network group (can be in the range 1-250).
+#define RF_freq RF12_433MHZ     //Freq of RF12B can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. Match freq to module
 
+//wireless payload
+typedef struct { int temperature, humidity; } PayloadTX;      // create structure - a neat way of packaging data for RF comms
+PayloadTX climate;  
 
 #include <math.h>
 
+//temperature calculation values
 float vishayA = 0.003354f;
 float vishayB = 0.000256985f;
 float vishayC = 0.000002620131f;
@@ -34,33 +53,28 @@ float vishayD = 0.00000006383091f;
 float ThermistorRo = 10000.0f;                 
 int TempSensorPin = 0;
 float TempBalanceR = 10050.0f;
-
+//humidity calculation values
 int HumSensorPin = 4;
 float HumTime1=0;
 float HumTime2=0;
 long HumReadingsPer=4;
-long HumReadDelay=100.0;
 
 
-void setup()                    // run once, when the sketch starts
-{
-  Serial.begin(9600); 
+void setup() {
+rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
 }
+
 
 void loop()                     // run over and over again
 {
-  int HumidityValue=(100 - (0.61364f * ((evalHumid(HumReadingsPer, HumSensorPin)) - 10)));
-  int TempValue = CalculateTemp(analogRead(TempSensorPin));
-  Serial.println("_____");
-  Serial.println("Temperature (degF)");
-  Serial.println(TempValue);
-  Serial.println("Humidity (%relative)");
-  Serial.println(HumidityValue);
-  Serial.println("_____");
-  delay(100);
+climate.humidity=(100 - (0.61364f * ((evalHumid(HumReadingsPer, HumSensorPin)) - 10)));
+climate.temperature = CalculateTemp(analogRead(TempSensorPin));
+    
+rf12_sendNow(0, &climate, sizeof climate);                    
+rf12_sendWait(2);
+
+delay(100);
 }
-
-
 
 
 long evalHumid(long samples, int sPin){
@@ -79,7 +93,7 @@ long RCtime(int sensPin){
   long result = 0;
   pinMode(sensPin, OUTPUT);       // make pin OUTPUT
   digitalWrite(sensPin, HIGH);    // make pin HIGH to charge capacitor - study the schematic
-  delay(2500);                       // wait 1s to make sure cap is discharged
+  delay(100);                       // wait 1s to make sure cap is discharged
 
   pinMode(sensPin, INPUT);  // turn pin into an input and time till pin goes low
   digitalWrite(sensPin, LOW);// turn pullups off - or it won't work
