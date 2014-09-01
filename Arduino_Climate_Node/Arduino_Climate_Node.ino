@@ -61,19 +61,23 @@ long HumReadingsPer=4;
 
 
 void setup() {
-rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
+  rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
 }
 
 
 void loop()                     // run over and over again
 {
-climate.humidity=(100 - (0.61364f * ((evalHumid(HumReadingsPer, HumSensorPin)) - 10)));
-climate.temperature = CalculateTemp(analogRead(TempSensorPin));
-    
-rf12_sendNow(0, &climate, sizeof climate);                    
-rf12_sendWait(2);
+  climate.humidity=(100 - (0.61364f * ((evalHumid(HumReadingsPer, HumSensorPin)) - 10)));
+  climate.temperature = CalculateTemp(analogRead(TempSensorPin));
+  delay(50);
 
-delay(100);
+  rf12_recvDone(); // ignore incoming packets
+  if (rf12_canSend()){
+    rf12_sendNow(0, &climate, sizeof climate);  
+    delay(10);
+    rf12_sendWait(2);
+  }
+  delay(50);
 }
 
 
@@ -93,15 +97,12 @@ long RCtime(int sensPin){
   long result = 0;
   pinMode(sensPin, OUTPUT);       // make pin OUTPUT
   digitalWrite(sensPin, HIGH);    // make pin HIGH to charge capacitor - study the schematic
-  delay(100);                       // wait 1s to make sure cap is discharged
+  delay(100);                       // wait 500ms to make sure cap is discharged
 
   pinMode(sensPin, INPUT);  // turn pin into an input and time till pin goes low
   digitalWrite(sensPin, LOW);// turn pullups off - or it won't work
-  //decayTime(1);
   while(digitalRead(sensPin)){result++;}    // wait for pin to go low 
-  return result;
-  //decayTime(2);
-  //return decayTime(3);  
+  return result; 
 }
 
 long decayTime(int input){

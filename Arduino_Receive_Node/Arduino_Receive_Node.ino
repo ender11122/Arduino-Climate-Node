@@ -28,15 +28,7 @@ void setup() {
   
   rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
   Serial.begin(9600); 
-  Serial.println("RF12B demo Receiver - Simple demo"); 
   
-  Serial.print("Node: "); 
-  Serial.print(myNodeID); 
-  Serial.print(" Freq: "); 
-  Serial.print("433Mhz");
-
-   Serial.print(" Network: "); 
-   Serial.println(network);
 }
 
 void loop() {
@@ -48,9 +40,10 @@ void loop() {
         
     if (node_id == emonTx_NodeID)  {             //check data is coming from node with the corrct ID
         climate=*(PayloadTX*) rf12_data;            // Extract the data from the payload 
-       Serial.print("temperature: "); Serial.println(climate.temperature); 
-       Serial.print("humidity: "); Serial.println(climate.humidity); 
-       Serial.println("  "); 
+       Serial.write("temperature");
+       Serial.write(climate.temperature); 
+       Serial.write("humidity");
+       Serial.write(climate.humidity);  
   }
  }
 }
