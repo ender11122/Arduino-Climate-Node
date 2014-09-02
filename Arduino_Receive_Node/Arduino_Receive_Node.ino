@@ -23,28 +23,27 @@ typedef struct { int temperature, humidity; } PayloadTX;      // create structur
 PayloadTX climate; 
 
 const int emonTx_NodeID=10;            //emonTx node ID
+int read_buffer;
 
 void setup() {
-  
   rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
-  Serial.begin(9600); 
-  
+  Serial.begin(9600);   
 }
 
 void loop() {
+  if (rf12_recvDone()) {    
+     if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0) {
   
- if (rf12_recvDone()){    
-  if (rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0) {
-    
-    int node_id = (rf12_hdr & 0x1F);		  //extract nodeID from payload
-        
-    if (node_id == emonTx_NodeID)  {             //check data is coming from node with the corrct ID
-        climate=*(PayloadTX*) rf12_data;            // Extract the data from the payload 
-       Serial.write("temperature");
-       Serial.write(climate.temperature); 
-       Serial.write("humidity");
-       Serial.write(climate.humidity);  
-  }
- }
+       int node_id = (rf12_hdr & 0x1F);		  //extract nodeID from payload
+          
+       if (node_id == emonTx_NodeID)  {             //check data is coming from node with the corrct ID
+           climate=*(PayloadTX*) rf12_data;            // Extract the data from the payload
+
+       } 
+     }
+   }
+   Serial.println((int) Serial.read());
+   delay(200);
 }
-}
+
+ 
