@@ -39,7 +39,6 @@ int HumSensorPin = 4;
 float HumTime1=0;
 float HumTime2=0;
 long HumReadingsPer=4;
-long HumReadDelay=100.0;
 
 
 void setup()                    // run once, when the sketch starts
@@ -57,7 +56,7 @@ void loop()                     // run over and over again
   Serial.println("Humidity (%relative)");
   Serial.println(HumidityValue);
   Serial.println("_____");
-  delay(100);
+  delay(10);
 }
 
 
@@ -79,7 +78,7 @@ long RCtime(int sensPin){
   long result = 0;
   pinMode(sensPin, OUTPUT);       // make pin OUTPUT
   digitalWrite(sensPin, HIGH);    // make pin HIGH to charge capacitor - study the schematic
-  delay(2500);                       // wait 1s to make sure cap is discharged
+  delay(100);                       // wait 100ms to make sure cap is discharged
 
   pinMode(sensPin, INPUT);  // turn pin into an input and time till pin goes low
   digitalWrite(sensPin, LOW);// turn pullups off - or it won't work
