@@ -62,6 +62,7 @@ long HumReadingsPer=4;
 
 void setup() {
   rf12_initialize(myNodeID,RF_freq,network);   //Initialize RFM12 with settings defined above  
+  Serial.begin(4800);
 }
 
 
@@ -77,6 +78,8 @@ void loop()                     // run over and over again
     delay(10);
     rf12_sendWait(2);
   }
+  Serial.println(climate.humidity);
+  Serial.println(climate.temperature);
   delay(50);
 }
 
