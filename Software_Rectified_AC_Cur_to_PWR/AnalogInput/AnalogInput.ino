@@ -27,13 +27,13 @@
  
  */
 
-long int RL = 550; //need to target as high as possible for accuracy 
-long int Turns = 2000;
-float VoltsPer = 0.00488;
-float RmsFactor = 0.707;
-float VSenseRMS = 0;
-float Irms = 0;
-int VAC = 134;
+double RL = 219; //need to target as high as possible for accuracy 
+double Turns = 2000;
+double VoltsPer = 0.00488;
+double RmsFactor = 0.707;
+double VSenseRMS = 0;
+double Irms = 0;
+double VAC = 134;
 int sensorPin = A1;    // select the input pin for the potentiometer
 int ledPin = 13;      // select the pin for the LED
 int sensorValue = 0;  // variable to store the value coming from the sensor
@@ -55,8 +55,10 @@ void loop() {
   }
   Serial.println(sensorValue);
   VSenseRMS = sensorValue*VoltsPer*RmsFactor;
-  Irms = VSenseRMS / RL * Turns;
+  Irms = VSenseRMS * Turns / RL;
   Serial.println("***************");
+  Serial.print("VSenseRMS: ");
+  Serial.println(VSenseRMS);
   Serial.print("Irms = ");
   Serial.println(Irms);
   Serial.print("Power = ");
