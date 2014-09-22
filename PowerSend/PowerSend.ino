@@ -26,8 +26,8 @@ int interPacketDelay = 1000; //wait this many ms between sending packets
 char input = 0;
 
 
-double RL = 219; 
-double Turns = 2000;
+double RL = 100; 
+double Turns = 3000;
 double VoltsPer = 0.00488;
 double RmsFactor = 0.707;
 double VSenseRMS = 0;
